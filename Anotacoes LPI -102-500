@@ -1,0 +1,339 @@
+########################################################### 		Anotações LPI-102		     ##############################################################################################
+
+
+SS - Este comando é utilizado para mostrar na tela informações de sockets abertos na máquina, podendo ser TCP/UDP/Unix com conexões ativas estabelcidas usando portas.
+
+Para mostrar todas as conexões ativas e abertas da máquina basta utilzar o comando ss sem nenhuma variação.
+
+Listando informações do tipo tcp e udp juntamente com estado basta utilizar ss -ntupl.
+
+---------------------------------
+
+netcat - Este comando é utilizado para testar conexões de hosts em portas tcp/udp.
+
+Ex: netcat 192.168.10.1 22
+
+O comando nc também possui a mesma função que o netcat, basta utilizar da seguinte forma:
+
+Ex: nc 192.168.10.1 22
+
+Outra utlização bastante interessante do comando nc é para abrir uma porta no servidor.Ex:
+
+nc -l -p $1546
+
+sintaxe = comando + listar + porta + $1234 
+
+Com o comando nc -vz você pode testar um range de portas ( nc -vz 1200 -1210 )
+--------------------------------------------------------------------
+Com o comando who você pode ver quem ou qual usuário está conectado na máquina em real time.
+
+				$ who
+
+Ainda sobre o who com a opção -a é possível ver mais detalhes de quem está logado no sistema nesse momento.
+-------------------------------
+O comando w somente mostra quais usuários estão logados no momento e o que estão fazendo, além disso é possível ver quanto de consumo de cpu atrelado a cada processo.
+-------------------------------------
+
+Outro comando bem importante e utilizado nas operações diaria é o comando last que mostra o histórico de usuários que logaram na máquina e sua duração.
+-------------------------------------------------
+Uma opção bem legal que pode ser usada é o comando lastb  ele mostra usuários que foram bloqueados ou que não conseguiram logar por conta de senha e etc.
+----------------------------------------------------
+
+Para ler algum arquivo de tentavia de login retroativo ou atual utilizamos o comando last com a seguinte variação :
+
+				$ last -f $nome_do_arquivo
+---------------------------------------------------------------------
+
+Outro comando importante para auditoria é o comando lastlog ele puxa qual foi a última vez que um usuário fez login no terminal.
+
+				$ lastlog
+Outra opção bem que pode ser usado é o comando : $ lastlog -u $nome_do_usuario
+-------------------------------------------
+
+Para obter informações de senhas de contas de usuários no linux podemos utilizar dois comandos para manipular o primeiro deles é o chage:
+			$ chage -l $nome_do_usr
+O segundo o comando é passwd:
+			$ passwd -S $nome_do_usr
+			
+Com estes comandos é possível ter uma visão de como está o status da conta do usuário em relação a senha. Uma opção bem importante é que com o comando passwd temos algumas letras que podem indicar qual o status do user ( L = locked ) ( P = Password setado ) e ( NOP= Não foi setado password ).
+
+Todas essas informações de senhas são extraídas do /etc/shadow.
+
+Uma forma de consultar contas/senhas de usuários basta acessar o arquivo shadow e fazer um grep no usuário especifico. No inicio da linha será mostrado um ponto de exclamação para você indicando que o usuário está bloqueado.
+------------------------------------------------------------------
+Algumas variações do comando passwd:
+
+			$ passwd -x30 $nome_do_user ( este comando seta uma expiração de senha em 30 dias )
+			$ chage -l $home_do_user (este comando é possível ver a operação setada acima )
+			$ passwd -n2 $nome_do_user ( este comando seta o número minimo de dias que um usuário pode setar senha )
+			$ passwd -w4 $nome_do_user ( este comando informa ao usuário a quantidade de dias que a senha dele irá expirar)
+			$ passwd -i10 $nome_do_user ( este comando define quantidade de dias para desativar a conta após expiração da senha )
+			$ passwd -l $nome_do_user ( este comando tem o intuito de bloquear a conta)
+			$ passwd -u $nome_do_user ( este comando desbloqueia conta do usuário) 
+			$ passwd -S $nome_do_user ( este comando mostra o status da conta )
+
+É possível realizar algumas operações com o comando usermod também, para isso veja algumas opções:
+
+			$ usermod -L $nome_do_user ( este comando bloqueia o usuário)
+			$ usermod -U $nome_do_user ( este comando desbloqueia o usuário)
+			$ usermod -e10 $nome_do_user ( este comando seta a expiração de senha para conta )
+			$ usermod -f10 $nome_do_user ( este comando define uma data para inativar a conta após bloqueio da conta )
+-----------------------------------------------------------------------------
+
+Um comando de segurança que pode ser utilizado com intuito de ajudar a proteger o sistema é o "ulimit" , com este comando é definir valores para abertura de processo no shell bash de cada usuário. Você pode ver as definições para seu shell bash a partir do comando abaixo:
+
+			$ ulimit -a ( este comando mostra os valores setados para seu usuário na sessão )
+
+É possível realizar a configurações do ulimits de algumas formas via CLI ou arquivo de configuração. Mas para definir que as configurações sejam setadas permanentemente é necessário utilizar o arquivo de configuração no caminho /etc/security/limits.conf
+
+É importante lembrar que podemos definir dois valores em dois nivéis de hardware e software sendo o valor maior aplicado ao de hw.
+-----------------------------------------------------------------------------------------------------------
+
+Um comando que pode ser usado para listar processos e PID é lsof. Algumas variações do comando pode ser vista abaixo:
+
+			$ lsof -u $nome_do_user ( este comando mostra a quantidade de processos abertos por determinado usuário )
+			$ lsof -i $nome_do_user ( este comando mostra a quantidade de processos abertos com relação a rede e portas )
+-----------------------------------------------------------------------------------
+
+Um comando utilizado para realizar scan de portas abertas é o NMAP. COm diversas variações.
+----------------------------------------------------------------
+Um comando que pode ser bem útil para mapear/listar processos abertos em socket nas máquinas no linux é o fuser. Algumas variações do comando:
+			
+			$ fuser 25/tcp ( este comando mostra qual o processo com PID abriu conexão nesta porta )
+			$ fuser -u 25/tcp ( este comando mostral qual o usuário abriu conexão e qual PID )
+			$ fuser -uv 25/tcp ( este comando mostra mais detalhes com usuário, commando e PID )
+---------------------------------------------------------------------------------------
+Algumas estruturas de segurança do Linux são de extrema importância. É importante saber que o arquivo /etc/passwd pode ser visualidos por todos os usuários do sistema e todos conseguem listar e padrão e normal que haja esse tipo de comportamento. Com relação ao arquivo /etc/shadow somente usuário sudo e com permissão têm o previlégio de ver este arquivo.
+-----------------------------------------------------------
+
+TCP Wrappers é utilizado no Linux para prover uma interface de socket de conexão com os serviços com mecanismos de segurança e dependendo da distribuição ele chama uma interface de comunicação juntamente com inetd ou xinetd.
+
+Arquivo de configuração principal /etc/inetd.conf ou /etc/xinetd.conf.
+
+Após ele receber a solicitação de comunicação da de entrada para o inetd ou xinetd ele valida a conexão e manda para os serviços solicitados Ex: ( ftp ou telnet ).
+
+Falando um pouco sobre o TCP Wrappers ele fornece a segurança através de dois arquivos /etc/hosts.allow e /etc/hosts.deny 
+
+No arquivo /etc/hosts.allow é configurado os hosts permitidos que podem acessar determinado serviço e no /etc/hosts.deny os que não esão permitidos.
+
+Um ponto bem interessante desses arquivos ele funciona basicamente como uma camada de proteção para acesso a serviço então basicamente dentro do arquivo declaramos os serviços que podem ser acessado, qual rede e etc. Ex:
+
+
+ALL: 10.0.0.* EXCEPT 10.0.0.1 ( Acesso de permissão para todos os serviços exceto do host 10.0.0.1)
+inet.ftpd 127.0.0.1 ( Acesso permitido para o serviço do ftpd a partir do localhost )
+
+
+PS: Geralmente o arquivo denay a opção ALL:ALL já vem descomentada e você deve permissionar a partir do arquivo allow e tudo que não estiver naquela lista será barrado. 
+----------------------------------------------------------------------------------------------------
+
+Com o xinetd funcionando como interface de liberação para o arquivo tem uma lógica do fluxo ele também utiliza biblioteca (lib) do TCP Wrappers mas o fluxo agora é através do TCP Wrapeers ele valida a conexão olhando nos arquivos host.allow e deny e depois faz uma segunda validação no diretório dos serviços /etc/xinetd.d .
+---------------------------------------------------------------------------------------------------------------------------
+
+Systemd.Socket sua principal função é permitir comunicação com outros processos dentro do linux e também permitir comunicação entre dois hosts.
+
+Para listar os sockets ativo na máquina execute os seguinte comando:
+
+			$ systemctl list-units --type=socket
+			
+Quando estamos falando sobre serviços no linux todos serviços possuem um socket que faz a comunicação com serviço. Para ver esses detalhes por exemplo você pode consultar /lib/systemd/system este diretório possui todos os serviços e sockets que temos configurados no sistema.
+
+O systemd.socket é similar ao xinetd porém possuí mais recursos e funcionalidades que podem ser exploradas.
+------------------------------------------------------------------------------------------------------------------
+
+Falando um pouco sobre a utilização de scripts no Linux para definir uma variavél no shell via CLI execute o seguinte comando :
+
+			$ TESTE=Valor1
+
+Para consultar a variavél que foi definida execute o seguinte comando :
+			
+			$ echo $TESTE
+
+PS: Vale lembrar que está variavél foi difinida localmente , então caso você execute o comando :
+
+			$ env |grep TESTE ( Não irá aparecer nenhum resultado ) para que isso seja possível você precisa exportar a variavél.
+
+Agora em outra situação se você utilizar o comando abaixo:
+
+			$ set |grep TESTE ( Ele irá mostrar o resultado, pois ele busca todas as variavéis de ambiente localmente e as que foram exportadas ).
+
+Dado esses dois cenários vamos supor que tenhamos um script definido que consulta o valor da variaveĺ teste que foi definida, quando o script for executado:
+			
+			$ ./ $nome_do_script.sh ( valor apresentado será em branco , porque a variavél não foi exportada ).
+		
+			$ bash $nome_do_scritp.sh ( Nada será apresentado nesse caso também pois nesse caso ele abrirá um shell bash novo para executar o script ).
+			
+			$ source $nome_do_script.sh ( comando roda o script localmente e apresentará o valor).
+			
+			$ . $nome_do_script.sh ( comando roda o script localmente também e apresenta o valor da variavél definido).
+			
+
+Para exportar uma variavél de ambiente basta utilizar o comando abaixo:
+
+			$ export $nome_da_variavél
+			              ou
+			$ export valor=variavel ( neste exemplo eu já estou exportando e declarando a variavél ).
+			
+Para remover uma variavél exporta basta digitar o comando:
+
+			$ unset $nome_da_variavél
+
+---------------------------------------------------------------------------------------------------
+
+Para definir um alias no shell bash basta executar o comando abaixo:
+
+			$ alias memoria="free -mh" ( este alias ficará salvo somente na sessão shell bash atual )
+------------------------------------------------------------------------------------------
+
+Existe um recurso no shell que pode ser usado para aplicar comandos em sequencias através de uma função. O comando é o "function" . Veja o exemplo abaixo:
+
+			$ function funcao1 {
+			> date;
+			> uptime;
+			> ls -l ;
+			> echo "fim da funcao";
+			> }
+			
+Existe também uma segunda forma que pode ser utilizada para executar esse comando:
+
+			$ function funcao2 { date; uptime; }
+
+Outra forma de realizar essa operação com o seguinte comando abaixo:
+
+			$ funcao3 () { uptime ; uname -a; hostnamectl; }
+			
+E por fim mais uma forma de realizar a mesma operação:
+
+			$ funcao4 () {
+			> date;
+			> uptime;
+			> ls -l ;
+			> echo "fim da funcao";
+			> }
+			
+PS: Todos esses comandos executados gravam as informações apenas nesta sessão bash, caso você abra um novo bash as informações seram perdidas.
+===================================================================================================================================================
+
+Agora que já sabemos um pouco sobre algumas opções que o bash pode nos ajudar é importante mencionar alguns arquivos de configuração que podem ajudar muito nas operações do dia a dia.
+
+/etc/profile ---> Este arquivo referencia quando algum usuário do sistema tenta realizar um processo de login seja terminal console ou interface gráfica.
+
+/etc/bash.bashrc ---> Este arquivo é utilizado quando é realizado uma nova abertura de uma sessão shell.
+
+PS: É importante se atentar a observação destes dois arquivos pois sua utilização pode ser bem diferente dependendo da aplicação da da variavél.
+
+
+Importante lembrar que no diretório /etc/profile.d é aonde ficam todos os scritps que são executados quando o usuário realiza o processo de login.
+
+PS: Estas definições acima uma vez configuradas são definidas para todos os usuários.
+
+Caso você queria realizar a modificação para um usuário em especifico basta modificar o arquivo de configuração localizado em cada diretório home do usuário.
+
+
+PS: O ARQUIVO QUE NECESSITA SER MODIFICADO PARA O USUÁRIO ESPECIFICO VARIA DE ACORDO COM CADA DISTRIBUIÇÃO,PORÉM ELE TEM UMA LÓGICA A SER SEGUIDA:
+
+ELE VAI PROCURAR OS SEGUINTES ARQUIVOS EM SEQUÊNCIA:
+
+~/.bash_profile
+~/.bash_login
+~/.profile
+
+No meu caso estou utilizando Debian/Ubuntu o arquivo presente aqui é ".profile" então basta editar este arquivo para que quando você realizar o processo de login seja carregas suas variavéis de ambiente.
+
+Agora se quisermos realizar a alteração e carregamento de variavéis em uma nova sessão shell basta editar o arquivo presente ".bashrc" presente no home de cada usuário.
+
+Outro arquivo de configuração bem interessante no Linux é ".bash_logout" ele executa uma ação toda vez que você sai do login. Ex ( Suponha que vc queria realizar uma limpeza de seus arquivos temporários toda vez que sair do login , basta adicionar a configuração no arquivo ".bash_logout".
+
+Um arquivo também que pode ser cobrado no exame e vale estudar é /etc/inputrc este arquivo de configuração contêm todas as definições que podem ser setadas no terminal. Ex ( Teclas de atalho , movimentação pelo terminal e etc).
+
+Um diretório bem interessante dentro do shell Linux é o /etc/skel ele é literalmente um esqueleto onde se adicionado um arquivo/diretório ou configuração ele replica para os demais usuários do sistema automaticamente.
+
+PS: Este arquivo /etc/skel só pode ser editado por um usuário com privilégio de root.
+
+Para fixar o conteúdo é importante lembrar de algumas variavéis de ambiente:
+
+Display --> Indica às aplicações gráficas onde as janelas deverão ser exibidas.
+
+HISTFILE --> Arquivo do histórico de comandos
+
+HISTFILESIZE -->  Quantidade de linhas/comandos armazenados no arquivo de histórico
+
+LANG --> Definição do idioma
+ 
+LOGNAME e USER --> Nome do usuário atual
+
+PATH --> Diretórios em que o Linux irá procurar por arquivos executáveis
+
+PS1 --> Aparência do prompt do shell.
+		
+PWD --> Diretório atual
+
+OLDPWD --> Diretório anterior			
+=====================================================================================================================================================================
+
+							Tópicos sobre custumização e shell Script
+
+Na construção de um script é importante se atentar a alguns fatores e seguir uma estrutura no código. Boas práticas :
+
+-----------------------> Definir qual o shell que você está chamando para executar o script na maioria das vezes é #!/bin/bash.
+-----------------------> Adicionar comentários em seu script como autor o que o script faz e etc.
+-----------------------> 
+
+
+Após finalizar a construção do script é necessário dar permissão para que o script possa ser executado. obs ( chmod +x $nome_do_script).
+
+Como dito anteriormente a algumas maneiras de executar o script ( . $nome_do_script , ./$nome_do_script, bash $nome_do_script , source $nome_do_script). O mais comum é que ao executar um script ele seja executado em uma outra sessão shell , mas se caso quiser executar localmente defina . , source ou ./).
+
+Existe também uma forma de executar um script e deixar o shell atual, para isso você executa o comando abaixo:
+
+			$ exec ./$nome_do_script ( este comando vai executar o script e deslogar do shell atual.
+
+Existe uma maneira de acrescentar o script em uma variavél $PATH, para isso edite o arquivo de configuração no ".profile".
+
+PS: Caso você esteja fazendo essa operação com usuário root muito cuidado não esqueça de declarar o restante do caminho $PATH conforme estava antes.
+==========================================================================================================================================================
+
+
+Quando estamos programando em shell é importante conhecer alguns macetes da linguagem.  Exemplo :
+
+echo -n ----> Quando você adiciona isso em seu script você está dizendo que quer o resultado na mesma linha.
+
+echo " " ---> significa que você quer adicionar um espaço entre uma linha e outra.
+
+VAR1=1234 ---> Declarar variavéis pode ser bem útil na chamada de um script.
+
+VAR2="LPI-102-500" ----> Declarar variavéis com caracteres especiais é necessário que você utilize aspas duplas para proteger o contéudo sem que o shell interprete.
+
+read VAR1 ---> Adcionar o comando read em um script quer dizer que você quer armazenar um valor para uma variavél.
+
+VAR3=`cat /etc/passwd |wc -l` ----> Neste exemplo usei uma variavél de ambiente para executar um comando. Importe lembrar que executar comando como variavés é necessário que você utilze crase.
+=============================================================================================
+
+Alguns operadores de extrema inmportância na linguagem shell:
+
+if ---> condição "se".
+fi ---> indica finalização da condição
+then ---> então 
+test ---> utilizado para validar saída de um comando. ( Ou seja ele puxa o ou STDIN STDERR do terminal ). 
+echo $? ---- > Te trás a saída do último comando sendo 0 como sucesso e 1 ou outros resultados como falha.
+test -f --- > É utilizado para testar se existe o arquivo criado.
+test 10 -gt 20 ---> teste de condição para saber se o 10 é maior que 20
+test 10 -lt 20 ---> teste de condição para saber se o 10 é menor que 20
+if [ -d /etc/profile.d]; --- > Testa as condições em cima de diretórios
+case ---> Caso 
+esac --> fim de caso 
+else - testar condição senão tiver algo presente por exemplo
+sleep -- > Comando utilzado em scripts para travar a tela por um periodo de tempo.
+
+
+
+
+					
+			
+			
+			
+ 
+
+
+
+
+
